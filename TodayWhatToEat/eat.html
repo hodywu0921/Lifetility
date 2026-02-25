@@ -7,49 +7,115 @@
     <link rel="stylesheet" href="../TodayWhatToEat/css/eat-style.css">
 </head>
 <body>
-    <a href="../index.html" class="back-link">🔙 回首頁</a>
+    <a href="../index.html" class="back-link">
+        <span class="back-icon">🔙</span> 回首頁
+    </a>
 
-    <div class="eat-container">
-        <div class="header">
+    <a href="javascript:void(0)" class="add-food-link" onclick="openVerifyModal()">
+        <span class="add-icon">➕</span> 新增美食
+    </a>
+
+    <main class="eat-container">
+        <header class="header">
             <h1>今天想吃點...</h1>
             <p>看奇檬子，點擊箱子</p>
-        </div>
+        </header>
 
-        <div class="food-boxes-container">
-            <div class="food-box poor" onclick="drawFood('月底了')">
+        <section class="food-boxes-container">
+            <div class="food-box is-poor" onclick="drawFood('月底了')">
                 <div class="box-emoji">💸</div>
                 <div class="box-label">月底了</div>
             </div>
 
-            <div class="food-box rich" onclick="drawFood('犒賞自己')">
+            <div class="food-box is-rich" onclick="drawFood('犒賞自己')">
                 <div class="box-emoji">💎</div>
                 <div class="box-label">犒賞自己</div>
             </div>
 
-            <div class="food-box lazy" onclick="drawFood('我就廢')">
+            <div class="food-box is-lazy" onclick="drawFood('我就廢')">
                 <div class="box-emoji">🛌</div>
                 <div class="box-label">我就廢</div>
             </div>
-        </div>
+        </section>
 
         <div id="result-overlay" class="result-overlay">
-            <div class="result-card">
-                <span class="close-btn" onclick="closeResult()">×</span>
+            <article class="result-card">
+                <span class="close-btn" onclick="closeResult()" aria-label="關閉">&times;</span>
+                
                 <div class="result-emoji" id="res-emoji">🍜</div>
-                
-                <h2 id="res-name" style="margin-bottom: 5px;">美食名稱</h2>
-                
+                <h2 id="res-name">美食名稱</h2>
                 <div id="res-price">NT$ 0</div>
-                
                 <p id="res-desc">美食簡述...</p>
-                
                 <div class="tag" id="res-tag">#區域</div>
+                
                 <button class="go-btn" onclick="openMap()">立刻導航 📍</button>
+            </article>
+        </div>
+
+        <div id="verify-overlay" class="result-overlay">
+            <div class="result-card">
+                <span class="close-btn" onclick="closeVerifyModal()">&times;</span>
+                <div class="result-emoji">🛡️</div>
+                <h2>安全驗證</h2>
+                <p>請輸入下方驗證碼：</p>
+                
+                <div id="captcha-code" style="font-size: 2rem; font-weight: 900; color: #eb5e28; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 15px; border: 3px dashed #403d39;">
+                    --
+                </div>
+                
+                <input type="text" id="verify-input" placeholder="區分大小寫" autocomplete="off" style="width: 100%; padding: 12px; border: 3px solid var(--dark-brown); border-radius: 12px; font-size: 1.1rem; margin-bottom: 20px; outline: none; text-align: center;">
+                
+                <button class="go-btn" onclick="checkVerify()">驗證並前往 ➔</button>
             </div>
         </div>
-    </div>
+
+        <div id="add-food-overlay" class="result-overlay">
+            <article class="result-card add-food-card">
+                <span class="close-btn" onclick="closeAddFoodModal()">&times;</span>
+                <div class="result-emoji">🍳</div>
+                <h2>推薦新美食</h2>
+                <p>感謝你的分享，請填寫以下資訊：</p>
+                
+                <form id="food-form" class="food-form">
+                    <div class="form-group">
+                        <label>美食名稱</label>
+                        <input type="text" id="new-food-name" placeholder="例如：大安區滷肉飯" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>預估價格</label>
+                            <input type="number" id="new-food-price" placeholder="NT$" required>
+                        </div>
+                        <div class="form-group">
+                            <label>推薦類型</label>
+                            <div class="custom-select" id="custom-select">
+                                <div class="select-trigger" onclick="toggleDropdown()">
+                                    <span id="select-text">請選擇</span>
+                                    <span class="arrow">▼</span>
+                                </div>
+                                <div class="select-options" id="select-options">
+                                    <div class="option" onclick="selectOption('月底了', '💸')">月底了 (💸)</div>
+                                    <div class="option" onclick="selectOption('犒賞自己', '💎')">犒賞自己 (💎)</div>
+                                    <div class="option" onclick="selectOption('我就廢', '🛌')">我就廢 (🛌)</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="new-food-category" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>美味描述 (選填)</label>
+                        <textarea id="new-food-desc" rows="2" placeholder="簡單介紹一下這道美食吧..."></textarea>
+                    </div>
+                    
+                    <button type="button" class="go-btn" onclick="submitFoodForm()">確認新增 ➔</button>
+                </form>
+            </article>
+        </div>
+
+    </main>
 
     <script src="../TodayWhatToEat/js/eat-script.js"></script>
 </body>
-
 </html>
