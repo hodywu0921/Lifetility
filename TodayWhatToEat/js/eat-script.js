@@ -8,6 +8,7 @@ const CONFIG = {
         overlay: 'result-overlay',
         resName: 'res-name',
         resPrice: 'res-price',
+        resAddress: 'res-address',
         resDesc: 'res-desc',
         resEmoji: 'res-emoji',
         verifyOverlay: 'verify-overlay',
@@ -108,12 +109,16 @@ function updateResultUI(res) {
     document.getElementById(SELECTORS.resPrice).innerText = `預估價格：${res.price}`;
     document.getElementById(SELECTORS.resDesc).innerText = res.desc || "暫無詳細描述";
     
+    if (document.getElementById(SELECTORS.resAddress)) {
+        // 如果資料庫有地址就顯示，沒有就顯示「暫無地址資訊」
+        document.getElementById(SELECTORS.resAddress).innerText = res.address ? `📍 ${res.address}` : "📍 暫無地址資訊";
+    }
+
     if (res.emoji && document.getElementById(SELECTORS.resEmoji)) {
         document.getElementById(SELECTORS.resEmoji).innerText = res.emoji;
     }
 
     state.currentMapUrl = resolveMapUrl(res);
-
     document.getElementById(SELECTORS.overlay).style.display = 'flex';
 }
 
@@ -188,6 +193,7 @@ async function submitFoodForm() {
     const name = document.getElementById('new-food-name').value.trim();
     const price = document.getElementById('new-food-price').value.trim();
     const category = document.getElementById('new-food-category').value;
+    const address = document.getElementById('new-food-address').value.trim();
     const desc = document.getElementById('new-food-desc').value.trim();
 
     // 建立推薦類型與 Emoji 的對照表
@@ -216,10 +222,13 @@ async function submitFoodForm() {
     // 3. 封裝資料
     const formData = {
         name: name,
+        emoji: selectedEmoji,
         price: price,
-        category: category,
         desc: desc,
-        emoji: selectedEmoji
+        tag: "#網友推薦",
+        address: address,
+        map: "",
+        category: category
     };
 
     try {
