@@ -192,9 +192,9 @@ async function submitFoodForm() {
 
     // 建立推薦類型與 Emoji 的對照表
     const emojiMap = {
-        "我就廢": "🛌",
-        "犒賞自己": "💎",
-        "月底了": "💸"
+        "veg": "🛌",
+        "rich": "💎",
+        "poor": "💸"
     };
 
     // 根據選擇的類型取得對應的 emoji，若無匹配則給預設值
@@ -263,16 +263,27 @@ function toggleDropdown() {
  * 選擇選項邏輯
  */
 function selectOption(value, emoji) {
-    // 1. 更新顯示文字
-    document.getElementById('select-text').innerText = `${value} (${emoji})`;
+
+    // 建立一個轉換表，將英文代碼轉回中文顯示標籤
+    const labelMap = {
+        "poor": "能吃啥",
+        "rich": "想吃啥",
+        "veg": "我就廢"
+    };
+
+    // 1. 更新顯示文字：從 labelMap 取得中文名稱，不要直接顯示 value (英文)
+    const chineseLabel = labelMap[value] || value;
+
+    // 2. 更新顯示文字
+    document.getElementById('select-text').innerText = `${chineseLabel} (${emoji})`;
     
-    // 2. 更新隱藏的 input 數值供提交使用
+    // 3. 更新隱藏的 input 數值供提交使用
     document.getElementById('new-food-category').value = value;
     
-    // 3. 關閉選單
+    // 4. 關閉選單
     toggleDropdown();
     
-    // 視覺回饋：稍微閃爍一下
+    // 5. 視覺回饋：稍微閃爍一下
     document.getElementById('custom-select').style.borderColor = 'var(--primary)';
     setTimeout(() => {
         document.getElementById('custom-select').style.borderColor = 'var(--brown)';
