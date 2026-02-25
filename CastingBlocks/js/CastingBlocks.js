@@ -169,22 +169,19 @@ function setFinalState(mesh, res) {
     // 判斷是否為手機版 (螢幕寬度小於 500)
     const isMobile = window.innerWidth < 500;
     
-    // 手機版間距縮小到 1.2，散佈範圍縮小到 1.5
-    const minGap = isMobile ? 1.2 : 2.0;   
-    const spread = isMobile ? 1.5 : 3.0;
+    const minXGap = isMobile ? 3.0 : 4.0; 
+    const spreadX = isMobile ? 2.0 : 5.0;
+    const spreadZ = isMobile ? 4.0 : 6.0;
 
     let targetX, targetZ;
 
     if (mesh === cup1) {
-        // 杯 1 落在左半邊：範圍從 -minGap 到 -(minGap + spread)
-        targetX = -(minGap + Math.random() * spread);
-        targetZ = (Math.random() - 0.5) * 4; // Z 軸上下隨機
+        targetX = -(minXGap + Math.random() * spreadX);
+        targetZ = (Math.random() * (spreadZ/2)); // 0 ~ +2
     } else {
-        // 杯 2 落在右半邊：範圍從 minGap 到 (minGap + spread)
-        targetX = (minGap + Math.random() * spread);
-        targetZ = (Math.random() - 0.5) * 4; // Z 軸上下隨機
+        targetX = (minXGap + Math.random() * spreadX);
+        targetZ = -(Math.random() * (spreadZ/2)); // 0 ~ -2
     }
-    targetZ = (Math.random() - 0.5) * (isMobile ? 2 : 4);
 
     mesh.position.x = targetX;
     mesh.position.z = targetZ;
@@ -193,16 +190,12 @@ function setFinalState(mesh, res) {
     const randomYaw = Math.random() * Math.PI * 2;
     
     // 處理 3D 翻面邏輯
-    // res 0 = 平面(仰)，我們讓 Z 軸旋轉為 0
-    // res 1 = 凸面(俯)，我們讓 Z 軸旋轉為 PI (180度)
-    // 同時加入一點微小的傾斜 (Pitch/Roll)，讓它看起來不像完美的數學模型
     const tiltX = (Math.random() - 0.5) * 0.1; 
     const tiltY = randomYaw;
     const flipZ = (res === 0 ? 0 : Math.PI);
 
     mesh.rotation.set(tiltX, tiltY, flipZ);
 }
-
 function showResultText(r1, r2) {
     const display = document.getElementById('result');
     if (r1 !== r2) {
@@ -220,4 +213,5 @@ function showResultText(r1, r2) {
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+
 }
