@@ -123,12 +123,52 @@ body {
 }
 
 /* 箱子類型顏色 */
-.food-box.is-poor { background-color: var(--accent-gray); }
-.food-box.is-rich { background-color: #ffd700; }
-.food-box.is-lazy { background-color: var(--accent-blue); }
+.food-box.is-poor { 
+    background-image: url('../image/poor.png'); 
+    
+    background-size: cover; 
+    
+    background-position: center;
+    
+    background-repeat: no-repeat;
+    
+    background-color: transparent;
+}
+.food-box.is-rich { 
+    background-image: url('../image/rich.png'); 
+    
+    background-size: cover; 
+    
+    background-position: center;
+    
+    background-repeat: no-repeat;
+    
+    background-color: transparent;
+}
+.food-box.is-lazy { 
+    background-image: url('../image/veg.png'); 
+    
+    background-size: cover; 
+    
+    background-position: center;
+    
+    background-repeat: no-repeat;
+    
+    background-color: transparent;
+
+
+}
 
 .box-emoji { font-size: 3rem; margin-bottom: 10px; }
-.box-label { font-size: 1.1rem; font-weight: 900; }
+.box-label { 
+    font-size: 1.1rem; 
+    font-weight: 900;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 2px 8px;
+    border-radius: 5px;
+    margin-top: auto;
+    margin-bottom: 10px;
+}
 
 /* 動畫效果 */
 .shake {
