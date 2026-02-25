@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>今天咩呷殺毀</title>
+    <link rel="stylesheet" href="../TodayWhatToEat/css/eat-style.css">
+</head>
+<body>
+    <a href="../index.html" class="back-link">🔙 回首頁</a>
+
+    <div class="eat-container">
+        <div class="header">
+            <h1>今天想吃點...</h1>
+            <p>看奇檬子，點擊箱子</p>
+        </div>
+
+        <div class="food-boxes-container">
+            <div class="food-box poor" onclick="drawFood('月底了')">
+                <div class="box-emoji">💸</div>
+                <div class="box-label">月底了</div>
+            </div>
+
+            <div class="food-box rich" onclick="drawFood('犒賞自己')">
+                <div class="box-emoji">💎</div>
+                <div class="box-label">犒賞自己</div>
+            </div>
+
+            <div class="food-box lazy" onclick="drawFood('我就廢')">
+                <div class="box-emoji">🛌</div>
+                <div class="box-label">我就廢</div>
+            </div>
+        </div>
+
+        <div id="result-overlay" class="result-overlay">
+            <div class="result-card">
+                <span class="close-btn" onclick="closeResult()">×</span>
+                <div class="result-emoji" id="res-emoji">🍜</div>
+                
+                <h2 id="res-name" style="margin-bottom: 5px;">美食名稱</h2>
+                
+                <div id="res-price">NT$ 0</div>
+                
+                <p id="res-desc">美食簡述...</p>
+                
+                <div class="tag" id="res-tag">#區域</div>
+                <button class="go-btn" onclick="openMap()">立刻導航 📍</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../TodayWhatToEat/js/eat-script.js"></script>
+</body>
+</html>

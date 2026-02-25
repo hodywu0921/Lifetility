@@ -1,0 +1,112 @@
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background-color: #f4f1ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.bwa-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 40px 0;
+    perspective: 600px; /* 增加 3D 感 */
+}
+
+/* 模擬杯片外型 */
+.cup {
+    width: 60px;
+    height: 100px;
+    background-color: #b32d2e;
+    border-radius: 50% 50% 10% 10% / 100% 100% 0% 0%;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid #801a1b;
+}
+
+/* 平面代表「平的那面」朝上，圓弧代表「凸的那面」朝上 */
+.flat { background-color: #d9534f; border-bottom: 8px solid #a94442; }
+.round { border-radius: 50% 50% 50% 50%; transform: rotateX(180deg); }
+
+#resultText {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    min-height: 1.6em;
+}
+
+button {
+    padding: 10px 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    margin: 0 5px;
+}
+
+#throwBtn {
+    padding: 18px 50px; /* 大幅度增加點擊區域 */
+    font-size: 1.4rem;
+    font-weight: bold;
+    background-color: #ff6b6b;
+    border: 3px solid #4a4a4a; /* 加入粗邊框，延續首頁風格 */
+    box-shadow: 4px 4px 0px #4a4a4a; /* 漫畫風陰影 */
+    border-radius: 40px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+#throwBtn:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+#throwBtn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #4a4a4a;
+}
+
+#resetBtn { background-color: #666; color: white; }
+
+
+
+#ui {
+    position: absolute; 
+    bottom: 10%; 
+    width: 100%; 
+    /* 核心修正 1：讓容器本身不接收點擊，點擊可以穿透到 3D 場景 */
+    pointer-events: none; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 100; /* 確保在最上層 */
+    
+}
+#ui * { pointer-events: auto; } /* 讓按鈕可以點擊 */
+
+#result, #throwBtn, #homeBtn {
+    /* 核心修正 2：讓按鈕和文字框重新接收點擊 */
+    pointer-events: auto; 
+}
+
+#result {
+    font-weight: bold;
+    color: #ffda79; /* 使用鮮明的黃色 */
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 30px;
+    border-radius: 50px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    
+}

@@ -1,0 +1,230 @@
+:root {
+    --bg: #fffcf2;
+    --primary: #eb5e28; /* 活潑的食物橘 */
+    --brown: #403d39;
+}
+
+/* 修正基礎佈局 */
+body {
+    background-color: var(--bg);
+    margin: 0;
+    padding: 0;
+    font-family: "PingFang TC", sans-serif;
+    /* 移除 display: flex，避免內容在小螢幕被擠壓 */
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.eat-container {
+    width: 100%;
+    padding: 80px 20px 40px; /* 頂部留空間給返回按鈕 */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 水平居中 */
+    min-height: 100vh;
+}
+
+/* 修正標題跑版：確保標題不會被推到右邊 */
+.header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    margin: 0;
+    color: var(--brown);
+    width: 100%;
+}
+
+.header p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 8px;
+}
+
+.back-link {
+    position: absolute; /* 或 fixed */
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: white;
+    border: 3px solid var(--brown);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--brown);
+    font-weight: bold;
+    font-size: 0.85rem;
+    box-shadow: 3px 3px 0px var(--brown);
+    z-index: 100;
+}
+
+.food-boxes-container {
+    display: flex;
+    flex-direction: row;    /* 電腦版橫向排列 */
+    justify-content: center;
+    align-items: center;
+    gap: 40px;             /* 電腦版較大的間距 */
+    width: 100%;
+    margin: 40px auto;
+}
+
+/* 抽籤箱設計 */
+.food-box {
+    width: 140px;          /* 稍微調大一點，更有存在感 */
+    height: 140px;
+    background: #FFD93D;
+    border: 5px solid var(--brown);
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 8px 8px 0px var(--brown);
+    transition: transform 0.1s, box-shadow 0.1s;
+    /* 移除原本可能干擾的 margin */
+    margin: 0; 
+}
+
+/* 電腦版滑鼠懸停效果：箱子稍微浮起 */
+/* 手機版專屬樣式：當螢幕寬度小於 768px 時觸發 */
+@media (max-width: 767px) {
+    .food-boxes-container {
+        flex-direction: column; /* 強制垂直排列 */
+        gap: 20px;             /* 手機版較小的間距，避免佔據過多垂直空間 */
+    }
+
+    .food-box {
+        width: 180px;          /* 手機版可以稍微放大箱子，方便手指點擊 */
+        height: 100px;         /* 如果想省空間，可以改成橫向長方形 */
+        flex-direction: row;   /* 讓 Emoji 跟文字在手機上併排 (可選) */
+        gap: 15px;
+    }
+}
+
+/* 點擊時的視覺回饋 */
+.food-box:active {
+    transform: scale(0.95) translate(4px, 4px);
+    box-shadow: 4px 4px 0px var(--brown);
+}
+
+/* 針對不同類型的箱子給予不同顏色（選配） */
+.food-box.poor { background: #e9ecef; } /* 灰冷色調 */
+.food-box.rich { background: #ffd700; } /* 金色調 */
+.food-box.lazy { background: #a2d2ff; } /* 懶洋洋藍 */
+
+.box-emoji { font-size: 2.5rem; }
+.box-label { font-size: 0.8rem; font-weight: bold; }
+
+/* 搖晃動畫 */
+.shake {
+    animation: shakeAnim 0.6s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shakeAnim {
+    10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-2deg); }
+    20%, 80% { transform: translate3d(2px, 0, 0) rotate(2deg); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(-4deg); }
+    40%, 60% { transform: translate3d(4px, 0, 0) rotate(4deg); }
+}
+
+/* 結果卡片樣式 */
+.result-overlay {
+    /* 確保彈窗背景始終覆蓋全螢幕 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none; /* 由 JS 切換 */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px; /* 留一點邊界，防止卡片貼緊螢幕邊緣 */
+    box-sizing: border-box;
+}
+
+.result-card {
+    width: 100%;
+    max-width: 320px;
+    /* 核心修正：最大高度不超過螢幕的 90%，多出的部分可捲動 */
+    max-height: 90vh; 
+    overflow-y: auto; 
+    
+    background: white;
+    border: 5px solid var(--brown);
+    border-radius: 25px;
+    padding: 25px;
+    position: relative;
+    text-align: center;
+    box-sizing: border-box;
+    
+    /* 進場動畫 */
+    animation: popUp 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+/* 內容間距微調，防止太擠 */
+.result-card h2 {
+    margin: 10px 0;
+    font-size: 1.5rem;
+}
+
+.result-card p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+#res-price {
+    display: inline-block;
+    background: #fff3f0;
+    padding: 2px 12px;
+    border-radius: 8px;
+    border: 1px dashed var(--primary);
+    color: #eb5e28; 
+    font-weight: bold; 
+    margin-bottom: 15px; 
+    font-size: 1.1rem;
+
+}
+
+#res-desc {
+    line-height: 1.5; 
+    color: #444;
+}
+
+
+@keyframes popUp {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.result-emoji { font-size: 3rem; margin-bottom: 10px; }
+.tag { color: #888; font-size: 0.9rem; margin: 10px 0; }
+.close-btn { 
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--brown);
+    line-height: 1;
+}
+.go-btn {
+    width: 100%; /* 按鈕撐滿卡片寬度，更好按 */
+    padding: 15px;
+    font-size: 1.2rem;
+    margin-top: 15px;
+    border: 3px solid var(--brown);
+    box-shadow: 4px 4px 0px var(--brown);
+}

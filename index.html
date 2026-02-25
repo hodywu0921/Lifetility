@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生活の趣事</title>
+    <style>
+        :root {
+        --primary-bg: #fff9e6;
+        --accent-color: #ff6b6b;
+        --button-blue: #4ecdc4;
+        --text-dark: #4a4a4a;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--primary-bg);
+        color: var(--text-dark);
+        font-family: "PingFang TC", "STHeiti", "Microsoft JhengHei", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* 改用 min-height 避免內容被切掉 */
+        min-height: 100vh; 
+        /* 增加內距，防止手機邊緣貼齊 */
+        padding: 20px;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+
+    .hero {
+        text-align: center;
+        margin-bottom: 40px;
+        width: 100%;
+        /* 增加一點左右邊距，避免貼邊 */
+        padding: 0 15px; 
+        box-sizing: border-box;
+    }
+
+    .hero h1 {
+        /* 強制不換行 */
+        white-space: nowrap; 
+        
+        /* 讓字體大小隨螢幕寬度彈性縮放 */
+        /* 1.5rem 是最小值，6vw 是流動值，2.5rem 是最大值 */
+        font-size: clamp(1.5rem, 6.5vw, 2.5rem); 
+        
+        margin: 0;
+        color: var(--accent-color);
+        transform: rotate(-2deg);
+        line-height: 1.4;
+        
+        /* 確保即使螢幕極窄，也不會溢出太誇張 */
+        max-width: 90vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .hero p {
+        font-size: clamp(0.9rem, 4vw, 1.1rem);
+        margin-top: 15px;
+        /* color: #ff8e8e; */
+        line-height: 1.6;
+    }
+
+    .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        /* 限制最大寬度，在大螢幕才不會太寬 */
+        max-width: 320px; 
+    }
+
+    .menu-item {
+        display: block;
+        text-decoration: none;
+        background: white;
+        color: var(--text-dark);
+        text-align: center;
+        /* 稍微縮減內距適應小螢幕 */
+        padding: 15px 10px; 
+        font-size: 1.2rem;
+        font-weight: bold;
+        border-radius: 20px;
+        border: 3px solid var(--text-dark);
+        box-shadow: 5px 5px 0px var(--text-dark);
+        transition: all 0.2s ease;
+        /* 確保文字不會溢出 */
+        word-break: break-all; 
+    }
+
+    /* 針對小螢幕（如 iPhone SE）的微調 */
+    @media (max-width: 350px) {
+        .hero h1 {
+            font-size: 1.4rem;
+        }
+        .menu-item {
+            font-size: 1.1rem;
+            padding: 12px 8px;
+        }
+    }
+
+    .decoration {
+        font-size: 2.5rem; /* 稍微放大一點更可愛 */
+        margin-bottom: 10px;
+        display: inline-block;
+        animation: bowSwing 3s ease-in-out infinite; /* 加入輕微擺動動畫 */
+    }
+
+    @keyframes bowSwing {
+        0%, 100% { transform: rotate(-5deg) scale(1); }
+        50% { transform: rotate(5deg) scale(1.1); } /* 中間稍微放大並轉向 */
+    }
+
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="decoration">🎀試試就逝世🎀</div>
+        <h1>心靈毒雞湯</h1>
+        <p>人帥憂鬱，是有故事；人醜憂鬱，是有事故</p>
+    </div>
+
+    <div class="menu-list">
+        <a href="../Lifetility/CastingBlocks/ThrowMoonBlocks.html" class="menu-item btn-main">
+            🎲 擲就對了啦
+        </a>
+        
+        <a href="../Lifetility/TodayWhatToEat/eat.html" class="menu-item btn-coming disabled">
+            🍽️ 今天咩呷殺毀
+        </a>
+        
+        <a href="#" class="menu-item btn-coming disabled">
+            📝 今日小運勢 (開發中)
+        </a>
+    </div>
+
+    <!-- <div class="footer">
+        Life for Fun
+    </div> -->
+
+</body>
+</html>
