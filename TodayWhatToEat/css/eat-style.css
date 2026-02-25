@@ -65,12 +65,14 @@ body {
 
 .food-boxes-container {
     display: flex;
-    flex-direction: row;    /* 電腦版橫向排列 */
+    flex-direction: row; 
     justify-content: center;
     align-items: center;
-    gap: 40px;             /* 電腦版較大的間距 */
+    gap: 30px;           /* 設定格子間的區間 */
     width: 100%;
     margin: 40px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
 /* 抽籤箱設計 */
@@ -91,19 +93,16 @@ body {
     margin: 0; 
 }
 
-/* 電腦版滑鼠懸停效果：箱子稍微浮起 */
 /* 手機版專屬樣式：當螢幕寬度小於 768px 時觸發 */
 @media (max-width: 767px) {
     .food-boxes-container {
         flex-direction: column; /* 強制垂直排列 */
-        gap: 20px;             /* 手機版較小的間距，避免佔據過多垂直空間 */
+        gap: 20px;             /* 縮小垂直間距 */
     }
 
     .food-box {
-        width: 180px;          /* 手機版可以稍微放大箱子，方便手指點擊 */
-        height: 100px;         /* 如果想省空間，可以改成橫向長方形 */
-        flex-direction: row;   /* 讓 Emoji 跟文字在手機上併排 (可選) */
-        gap: 15px;
+        width: 160px;          /* 手機版適度放大，方便點擊 */
+        height: 120px;
     }
 }
 
@@ -227,4 +226,5 @@ body {
     margin-top: 15px;
     border: 3px solid var(--brown);
     box-shadow: 4px 4px 0px var(--brown);
+
 }
