@@ -22,18 +22,15 @@
         </header>
 
         <section class="food-boxes-container">
-            <div class="food-box is-poor" onclick="drawFood('月底了')">
-                <div class="box-emoji">💸</div>
-                <div class="box-label">月底了</div>
+            <div class="food-box is-poor" onclick="drawFood('poor')">
+                <div class="box-label">能吃啥</div>
             </div>
 
-            <div class="food-box is-rich" onclick="drawFood('犒賞自己')">
-                <div class="box-emoji">💎</div>
-                <div class="box-label">犒賞自己</div>
+            <div class="food-box is-rich" onclick="drawFood('rich')">
+                <div class="box-label">想吃啥</div>
             </div>
 
-            <div class="food-box is-lazy" onclick="drawFood('我就廢')">
-                <div class="box-emoji">🛌</div>
+            <div class="food-box is-lazy" onclick="drawFood('veg')">
                 <div class="box-label">我就廢</div>
             </div>
         </section>
@@ -95,9 +92,9 @@
                                     <span class="arrow">▼</span>
                                 </div>
                                 <div class="select-options" id="select-options">
-                                    <div class="option" onclick="selectOption('月底了', '💸')">月底了 (💸)</div>
-                                    <div class="option" onclick="selectOption('犒賞自己', '💎')">犒賞自己 (💎)</div>
-                                    <div class="option" onclick="selectOption('我就廢', '🛌')">我就廢 (🛌)</div>
+                                    <div class="option" onclick="selectOption('poor', '💸')">能吃啥 (💸)</div>
+                                    <div class="option" onclick="selectOption('rich', '💎')">想吃啥 (💎)</div>
+                                    <div class="option" onclick="selectOption('veg', '🛌')">我就廢 (🛌)</div>
                                 </div>
                             </div>
                             <input type="hidden" id="new-food-category" value="">
