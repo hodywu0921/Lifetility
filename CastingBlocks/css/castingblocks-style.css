@@ -79,7 +79,59 @@ button {
 
 #resetBtn { background-color: #666; color: white; }
 
+.back-link {
+    position: fixed !important;
+    top: 15px !important;
+    left: 15px !important;
+    
+    /* 強制固定寬高與內距，避免手機縮放差異 */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 15px !important; 
+    
+    background: #FFFFFF !important;
+    border: 3px solid #5D4037 !important;
+    border-radius: 12px !important;
+    
+    text-decoration: none !important;
+    color: #5D4037 !important;
+    font-weight: bold !important;
+    /* 直接給固定像素值 */
+    font-size: 16px !important; 
+    
+    /* 一致的硬陰影 */
+    box-shadow: 4px 4px 0px #5D4037 !important; 
+    z-index: 99999 !important;
+    transition: all 0.1s !important;
+    cursor: pointer !important;
+    
+    /* 確保字體不會因為手機旋轉而自動放大 */
+    -webkit-text-size-adjust: none;
+}
 
+/* 點擊效果同步 */
+.back-link:active {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0px #5D4037 !important;
+}
+
+/* 確保圖示大小一致 */
+.back-icon {
+    margin-right: 6px !important;
+    font-size: 18px !important;
+}
+
+/* 手機版：保持大小一致，方便點擊 */
+@media screen and (max-width: 767px) {
+    .back-link {
+        top: 15px;
+        left: 15px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        border-width: 3px; /* 手機版邊框稍細一點點 */
+    }
+}
 
 #ui {
     position: absolute; 
@@ -109,4 +161,5 @@ button {
     margin-bottom: 25px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     
+
 }
