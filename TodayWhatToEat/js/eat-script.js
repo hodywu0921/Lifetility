@@ -458,7 +458,7 @@ document.getElementById('quick-geo-btn').addEventListener('click', async () => {
         
         // 2. 顯示成功狀態
         btn.innerText = "📍 重新定位";
-        statusContainer.style.display = "block";
+        statusContainer.style.display = "";
         console.log("已暫存座標:", state.tempCoords);
         
     } catch (error) {
@@ -488,3 +488,4 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
+
