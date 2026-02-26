@@ -398,6 +398,22 @@ window.addEventListener('click', function(e) {
     }
 });
 
+document.getElementById('quick-geo-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('quick-geo-btn');
+    try {
+        btn.innerText = "⏳ 定位中...";
+        const loc = await getUserLocation();
+        
+        console.log(`📍 新增美食定位：Lat ${loc.lat}, Lng ${loc.lng}`);
+        
+        document.getElementById('new-food-address').value = `${loc.lat}, ${loc.lng}`;
+        btn.innerText = "✅ 已取得座標";
+    } catch (error) {
+        btn.innerText = "❌ 定位失敗";
+        alert("無法獲取位置，請手動輸入地址");
+    }
+});
+
 /**
  * 基礎視窗控制
  */
@@ -412,5 +428,3 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
-
-
