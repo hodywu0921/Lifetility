@@ -106,12 +106,30 @@ function updateResultUI(res) {
     const { SELECTORS } = CONFIG;
     
     document.getElementById(SELECTORS.resName).innerText = res.name;
-    document.getElementById(SELECTORS.resPrice).innerText = `預估價格：${res.price}`;
+    document.getElementById(SELECTORS.resPrice).innerText = `價格：${res.price}`;
     document.getElementById(SELECTORS.resDesc).innerText = res.desc || "暫無詳細描述";
     
     if (document.getElementById(SELECTORS.resAddress)) {
-        // 如果資料庫有地址就顯示，沒有就顯示「暫無地址資訊」
         document.getElementById(SELECTORS.resAddress).innerText = res.address ? `📍 ${res.address}` : "📍 暫無地址資訊";
+    }
+
+    const tagContainer = document.getElementById(SELECTORS.resTag);
+    if (tagContainer) {
+        tagContainer.innerHTML = '';
+        
+        if (res.tag) {
+            // 依空格拆分並過濾空字串
+            const tags = res.tag.split(' ').filter(t => t.trim() !== '');
+            
+            tags.forEach(tagText => {
+                const span = document.createElement('span');
+                span.className = 'tag-sticker'; // 對應 CSS 中的貼紙樣式
+                span.innerText = tagText;
+                tagContainer.appendChild(span);
+            });
+        } else {
+            tagContainer.innerText = "暫無標記資訊";
+        }
     }
 
     if (res.emoji && document.getElementById(SELECTORS.resEmoji)) {
@@ -324,3 +342,4 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
+
