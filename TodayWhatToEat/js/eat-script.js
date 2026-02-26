@@ -43,6 +43,11 @@ window.onload = async () => {
 };
 
 /**
+ * 在 state 物件中新增臨時座標存儲
+ */
+state.tempCoords = { lat: null, lng: null };
+
+/**
  * [GAS 串接部分] 保持原有的運行邏輯
  */
 async function fetchFoodFromGAS() {
@@ -316,16 +321,44 @@ async function submitFoodForm() {
         tag: "#網友推薦",
         address: address,
         map: "",
-        category: category
+        category: category,
+        lat: state.tempCoords ? state.tempCoords.lat : "",
+        lng: state.tempCoords ? state.tempCoords.lng : ""
     };
 
+    // try {
+    //     const GAS_DEPLOY_URL = CONFIG.GAS_URL;
+
+    //     const response = await fetch(GAS_DEPLOY_URL, {
+    //         method: "POST",
+    //         body: JSON.stringify(formData)
+    //     });
+
+    //     const result = await response.json();
+
+    //     if (result.result === "success") {
+    //         alert(`感謝！「${name}」已成功加入美食庫！`);
+    //         closeAddFoodModal();
+    //         fetchFoodFromGAS();
+    //     } else {
+    //         throw new Error(result.message);
+    //     }
+
+    // } catch (error) {
+    //     console.error("提交失敗:", error);
+    //     alert("提交時發生錯誤，請稍後再試。");
+    // } finally {
+    //     btn.innerText = originalText;
+    //     btn.disabled = false;
+    // }
     try {
         const GAS_DEPLOY_URL = CONFIG.GAS_URL;
 
         const response = await fetch(GAS_DEPLOY_URL, {
             method: "POST",
+            mode: 'no-cors', // 💡 注意：GAS POST 常用 no-cors，若 result 讀不到請檢查後端回傳
             body: JSON.stringify(formData)
-        });
+        }); 
 
         const result = await response.json();
 
@@ -336,6 +369,16 @@ async function submitFoodForm() {
         } else {
             throw new Error(result.message);
         }
+        
+        // 4. 重置與清理
+        state.tempCoords = { lat: null, lng: null }; // 清空暫存座標
+        if (document.getElementById('geo-status-container')) {
+            document.getElementById('geo-status-container').style.display = "none"; // 隱藏定位狀態
+        }
+        document.getElementById('quick-geo-btn').innerText = "📍 自動定位";
+
+        closeAddFoodModal();
+        fetchFoodFromGAS(); // 重新整理列表
 
     } catch (error) {
         console.error("提交失敗:", error);
@@ -398,20 +441,37 @@ window.addEventListener('click', function(e) {
     }
 });
 
+
+
+// 定位按鈕點擊事件
 document.getElementById('quick-geo-btn').addEventListener('click', async () => {
     const btn = document.getElementById('quick-geo-btn');
+    const statusContainer = document.getElementById('geo-status-container');
+    
     try {
         btn.innerText = "⏳ 定位中...";
-        const loc = await getUserLocation();
+        const loc = await getUserLocation(); 
         
-        console.log(`📍 新增美食定位：Lat ${loc.lat}, Lng ${loc.lng}`);
+        // 1. 將座標存入 state，不要改動地址 input 的 value
+        state.tempCoords.lat = loc.lat;
+        state.tempCoords.lng = loc.lng;
         
-        document.getElementById('new-food-address').value = `${loc.lat}, ${loc.lng}`;
-        btn.innerText = "✅ 已取得座標";
+        // 2. 顯示成功狀態
+        btn.innerText = "📍 重新定位";
+        statusContainer.style.display = "block";
+        console.log("已暫存座標:", state.tempCoords);
+        
     } catch (error) {
-        btn.innerText = "❌ 定位失敗";
-        alert("無法獲取位置，請手動輸入地址");
+        btn.innerText = "📍 自動定位";
+        alert("定位失敗：" + error.message);
     }
+});
+
+// 清除定位按鈕
+document.getElementById('clear-geo').addEventListener('click', () => {
+    state.tempCoords = { lat: null, lng: null };
+    document.getElementById('geo-status-container').style.display = "none";
+    document.getElementById('quick-geo-btn').innerText = "📍 自動定位";
 });
 
 /**
