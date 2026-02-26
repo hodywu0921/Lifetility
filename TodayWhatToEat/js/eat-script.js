@@ -124,7 +124,7 @@ async function drawFood(category) {
                         userLoc.lat, userLoc.lng, 
                         parseFloat(item.lat), parseFloat(item.lng)
                     );
-                    return dist <= 5; 
+                    return dist <= 2; 
                 }
                 return false;
             });
@@ -412,3 +412,4 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
+
