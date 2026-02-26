@@ -83,7 +83,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>價格</label>
-                            <input type="type" id="new-food-price" placeholder="NT$1-200" required>
+                            <input type="text" id="new-food-price" placeholder="NT$" required>
                         </div>
                         <div class="form-group">
                             <label>推薦類型</label>
@@ -104,7 +104,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label>店家地址 (選填)</label>
+                        <label>店家地址 (選填) 
+                            <span id="quick-geo-btn" style="cursor:pointer; color:#f1c40f; font-size:0.8rem; margin-left:10px;">
+                                📍 自動定位
+                            </span>
+                        </label>
                         <input type="text" id="new-food-address" placeholder="例如：台北市信義區忠孝東路..." autocomplete="off">
                     </div>
 
@@ -123,6 +127,3 @@
     <script src="../TodayWhatToEat/js/eat-script.js"></script>
 </body>
 </html>
-
-
-
