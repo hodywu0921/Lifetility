@@ -59,33 +59,129 @@ async function fetchFoodFromGAS() {
 /**
  * 核心抽籤函數：重構為邏輯與 UI 分離
  */
+// async function drawFood(category) {
+//     if (!state.foodDatabase.length) {
+//         console.warn("資料庫尚無資料，請稍候...");
+//         return;
+//     }
+
+//     const filteredFoods = state.foodDatabase.filter(item => {
+//         const itemCat = String(item.category || item.Category || "").trim();
+//         return itemCat === category;
+//     });
+
+//     if (filteredFoods.length === 0) {
+//         alert(`目前「${category}」清單裡還沒有美食喔！請檢查 Google Sheet 欄位。`);
+//         return;
+//     }
+
+//     const targetBox = event.currentTarget;
+//     triggerShakeAnimation(targetBox);
+
+//     setTimeout(() => {
+//         const randomResult = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
+//         updateResultUI(randomResult);
+//     }, CONFIG.ANIMATION_DURATION);
+// }
+
+
+/**
+ * 使用哈弗辛公式計算兩點間的直線距離 (單位: 公里)
+ */
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // 地球半徑 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; 
+}
+
+/**
+ * 獲取使用者當前 GPS 位置
+ */
+async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('您的瀏覽器不支援定位功能'));
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            (err) => reject(err),
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    });
+}
+
+/**
+ * 核心抽籤函式：整合類別篩選與地理位置判斷
+ */
 async function drawFood(category) {
-    // 1. 防呆檢查：確保資料已載入
-    if (!state.foodDatabase.length) {
+    // 1. 防呆檢查：確保資料庫已載入
+    if (!state.foodDatabase || !state.foodDatabase.length) {
         console.warn("資料庫尚無資料，請稍候...");
         return;
     }
 
-    // 2. 篩選資料邏輯
-    const filteredFoods = state.foodDatabase.filter(item => {
-        const itemCat = String(item.category || item.Category || "").trim();
-        return itemCat === category;
-    });
+    let filteredFoods = [];
+    const isLazyBox = (category === 'veg'); // 判斷是否為「我就廢」箱子
 
+    // 2. 針對「我就廢」箱子進行距離過濾
+    if (isLazyBox) {
+        try {
+            console.log("偵測到『我就廢』模式，正在嘗試獲取位置...");
+            const userLoc = await getUserLocation(); 
+            
+            filteredFoods = state.foodDatabase.filter(item => {
+                const itemCat = String(item.category || item.Category || "").trim();
+                // 必須是 veg 類別，且試算表有 I(lat) 與 J(lng) 座標
+                if (itemCat === 'veg' && item.lat && item.lng) {
+                    const dist = calculateDistance(
+                        userLoc.lat, userLoc.lng, 
+                        parseFloat(item.lat), parseFloat(item.lng)
+                    );
+                    return dist <= 5; // 過濾 5KM 內
+                }
+                return false;
+            });
+
+            if (filteredFoods.length === 0) {
+                console.log("5KM 內無符合美食，準備回退至全區 veg 抽籤");
+            }
+        } catch (error) {
+            console.warn("定位獲取失敗:", error.message);
+            // 失敗不中斷，後續會自動切換為全區抽籤
+        }
+    }
+
+    // 3. 通用篩選邏輯：如果 filteredFoods 是空的（其他箱子或定位失敗/太遠）
+    if (filteredFoods.length === 0) {
+        filteredFoods = state.foodDatabase.filter(item => {
+            const itemCat = String(item.category || item.Category || "").trim();
+            return itemCat === category;
+        });
+    }
+
+    // 4. 最終檢查：如果該類別真的沒資料
     if (filteredFoods.length === 0) {
         alert(`目前「${category}」清單裡還沒有美食喔！請檢查 Google Sheet 欄位。`);
         return;
     }
 
-    // 3. 動畫與交互處理 (UI)
+    // 5. 視覺動畫處理
+    // 透過 event.currentTarget 抓取點擊的箱子
     const targetBox = event.currentTarget;
-    triggerShakeAnimation(targetBox);
+    if (typeof triggerShakeAnimation === 'function') {
+        triggerShakeAnimation(targetBox);
+    }
 
-    // 4. 定時執行抽籤結果 (抽籤邏輯)
+    // 6. 執行抽籤動畫延遲並顯示結果
     setTimeout(() => {
         const randomResult = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
         updateResultUI(randomResult);
-    }, CONFIG.ANIMATION_DURATION);
+    }, CONFIG.ANIMATION_DURATION || 500);
 }
 
 /**
@@ -329,73 +425,37 @@ window.addEventListener('click', function(e) {
     }
 });
 
-/**
- * 使用哈弗辛公式計算兩點間的直線距離 (單位: 公里)
- */
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // 地球半徑 (km)
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; 
-}
-
-/**
- * 獲取使用者當前 GPS 位置
- */
-async function getUserLocation() {
-    return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            reject(new Error('您的瀏覽器不支援定位功能'));
-        }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            (err) => reject(err),
-            { enableHighAccuracy: true, timeout: 5000 }
-        );
-    });
-}
-
-async function handleVegBoxClick() {
-    const box = document.querySelector('.is-lazy');
+// async function handleVegBoxClick() {
+//     const box = document.querySelector('.is-lazy');
     
-    // 1. 先讓箱子晃動，增加視覺回饋
-    box.classList.add('shake');
-    setTimeout(() => box.classList.remove('shake'), 500);
+//     box.classList.add('shake');
+//     setTimeout(() => box.classList.remove('shake'), 500);
 
-    try {
-        // 2. 取得位置
-        const userLoc = await getUserLocation();
+//     try {
+//         const userLoc = await getUserLocation();
         
-        // 3. 篩選 5KM 內且類別為 veg 的美食
-        const nearbyFood = state.foods.filter(food => {
-            if (food.category === 'veg' && food.lat && food.lng) {
-                const dist = calculateDistance(
-                    userLoc.lat, userLoc.lng, 
-                    parseFloat(food.lat), parseFloat(food.lng)
-                );
-                return dist <= 5;
-            }
-            return false;
-        });
+//         const nearbyFood = state.foods.filter(food => {
+//             if (food.category === 'veg' && food.lat && food.lng) {
+//                 const dist = calculateDistance(
+//                     userLoc.lat, userLoc.lng, 
+//                     parseFloat(food.lat), parseFloat(food.lng)
+//                 );
+//                 return dist <= 5;
+//             }
+//             return false;
+//         });
 
-        // 4. 根據篩選結果執行後續抽籤
-        if (nearbyFood.length > 0) {
-            // 這裡呼叫您原本啟動轉圈動畫的函式，並傳入篩選後的陣列
-            runLotteryEffect(nearbyFood); 
-        } else {
-            alert("附近 5KM 內沒東西吃，幫您搜尋全區的『我就廢』美食！");
-            runLotteryEffect(state.foods.filter(f => f.category === 'veg'));
-        }
-    } catch (error) {
-        // 如果使用者拒絕定位，降級為普通抽籤
-        alert("定位失敗，將為您隨機推薦！");
-        runLotteryEffect(state.foods.filter(f => f.category === 'veg'));
-    }
-}
+//         if (nearbyFood.length > 0) {
+//             runLotteryEffect(nearbyFood); 
+//         } else {
+//             alert("附近 5KM 內沒東西吃，幫您搜尋全區的『我就廢』美食！");
+//             runLotteryEffect(state.foods.filter(f => f.category === 'veg'));
+//         }
+//     } catch (error) {
+//         alert("定位失敗，將為您隨機推薦！");
+//         runLotteryEffect(state.foods.filter(f => f.category === 'veg'));
+//     }
+// }
 
 /**
  * 基礎視窗控制
