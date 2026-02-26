@@ -356,9 +356,12 @@ async function submitFoodForm() {
 
         const response = await fetch(GAS_DEPLOY_URL, {
             method: "POST",
-            mode: 'no-cors', // 💡 注意：GAS POST 常用 no-cors，若 result 讀不到請檢查後端回傳
+            mode: "no-cors", // 💡 加入此行，繞過 CORS 檢查
+            headers: {
+                "Content-Type": "text/plain" // GAS 接收 JSON 時，建議用 text/plain 避免 preflight 失敗
+            },
             body: JSON.stringify(formData)
-        }); 
+        });
 
         const result = await response.json();
 
@@ -488,4 +491,5 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
+
 
