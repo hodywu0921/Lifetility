@@ -57,35 +57,6 @@ async function fetchFoodFromGAS() {
 }
 
 /**
- * 核心抽籤函數：重構為邏輯與 UI 分離
- */
-// async function drawFood(category) {
-//     if (!state.foodDatabase.length) {
-//         console.warn("資料庫尚無資料，請稍候...");
-//         return;
-//     }
-
-//     const filteredFoods = state.foodDatabase.filter(item => {
-//         const itemCat = String(item.category || item.Category || "").trim();
-//         return itemCat === category;
-//     });
-
-//     if (filteredFoods.length === 0) {
-//         alert(`目前「${category}」清單裡還沒有美食喔！請檢查 Google Sheet 欄位。`);
-//         return;
-//     }
-
-//     const targetBox = event.currentTarget;
-//     triggerShakeAnimation(targetBox);
-
-//     setTimeout(() => {
-//         const randomResult = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
-//         updateResultUI(randomResult);
-//     }, CONFIG.ANIMATION_DURATION);
-// }
-
-
-/**
  * 使用哈弗辛公式計算兩點間的直線距離 (單位: 公里)
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -119,30 +90,41 @@ async function getUserLocation() {
  * 核心抽籤函式：整合類別篩選與地理位置判斷
  */
 async function drawFood(category) {
-    // 1. 防呆檢查：確保資料庫已載入
+    // 1. 【關鍵修正】在進入 async 邏輯前，先擷取 event 與 targetBox
+    const targetBox = event ? event.currentTarget : null; 
+
+    // 防呆檢查
     if (!state.foodDatabase || !state.foodDatabase.length) {
         console.warn("資料庫尚無資料，請稍候...");
         return;
     }
 
     let filteredFoods = [];
-    const isLazyBox = (category === 'veg'); // 判斷是否為「我就廢」箱子
+    const isLazyBox = (category === 'veg');
 
-    // 2. 針對「我就廢」箱子進行距離過濾
+    // 2. 執行晃動動畫 (搬到最前面，讓使用者點擊後立刻有反應)
+    if (targetBox && typeof triggerShakeAnimation === 'function') {
+        triggerShakeAnimation(targetBox);
+    }
+
+    // 3. 距離過濾邏輯
     if (isLazyBox) {
         try {
             console.log("偵測到『我就廢』模式，正在嘗試獲取位置...");
             const userLoc = await getUserLocation(); 
-            
+            console.log(`成功取得裝置位置！`);
+            console.log(`緯度 (Lat): ${userLoc.lat}`);
+            console.log(`經度 (Lng): ${userLoc.lng}`);
+
             filteredFoods = state.foodDatabase.filter(item => {
                 const itemCat = String(item.category || item.Category || "").trim();
-                // 必須是 veg 類別，且試算表有 I(lat) 與 J(lng) 座標
+                // 確保試算表對應欄位名稱正確 (lat, lng)
                 if (itemCat === 'veg' && item.lat && item.lng) {
                     const dist = calculateDistance(
                         userLoc.lat, userLoc.lng, 
                         parseFloat(item.lat), parseFloat(item.lng)
                     );
-                    return dist <= 5; // 過濾 5KM 內
+                    return dist <= 5; 
                 }
                 return false;
             });
@@ -152,11 +134,10 @@ async function drawFood(category) {
             }
         } catch (error) {
             console.warn("定位獲取失敗:", error.message);
-            // 失敗不中斷，後續會自動切換為全區抽籤
         }
     }
 
-    // 3. 通用篩選邏輯：如果 filteredFoods 是空的（其他箱子或定位失敗/太遠）
+    // 4. 通用篩選邏輯
     if (filteredFoods.length === 0) {
         filteredFoods = state.foodDatabase.filter(item => {
             const itemCat = String(item.category || item.Category || "").trim();
@@ -164,20 +145,12 @@ async function drawFood(category) {
         });
     }
 
-    // 4. 最終檢查：如果該類別真的沒資料
     if (filteredFoods.length === 0) {
-        alert(`目前「${category}」清單裡還沒有美食喔！請檢查 Google Sheet 欄位。`);
+        alert(`目前「${category}」清單裡還沒有美食喔！`);
         return;
     }
 
-    // 5. 視覺動畫處理
-    // 透過 event.currentTarget 抓取點擊的箱子
-    const targetBox = event.currentTarget;
-    if (typeof triggerShakeAnimation === 'function') {
-        triggerShakeAnimation(targetBox);
-    }
-
-    // 6. 執行抽籤動畫延遲並顯示結果
+    // 5. 執行抽籤延遲並顯示結果
     setTimeout(() => {
         const randomResult = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
         updateResultUI(randomResult);
@@ -424,38 +397,6 @@ window.addEventListener('click', function(e) {
         document.getElementById('select-options').classList.remove('active');
     }
 });
-
-// async function handleVegBoxClick() {
-//     const box = document.querySelector('.is-lazy');
-    
-//     box.classList.add('shake');
-//     setTimeout(() => box.classList.remove('shake'), 500);
-
-//     try {
-//         const userLoc = await getUserLocation();
-        
-//         const nearbyFood = state.foods.filter(food => {
-//             if (food.category === 'veg' && food.lat && food.lng) {
-//                 const dist = calculateDistance(
-//                     userLoc.lat, userLoc.lng, 
-//                     parseFloat(food.lat), parseFloat(food.lng)
-//                 );
-//                 return dist <= 5;
-//             }
-//             return false;
-//         });
-
-//         if (nearbyFood.length > 0) {
-//             runLotteryEffect(nearbyFood); 
-//         } else {
-//             alert("附近 5KM 內沒東西吃，幫您搜尋全區的『我就廢』美食！");
-//             runLotteryEffect(state.foods.filter(f => f.category === 'veg'));
-//         }
-//     } catch (error) {
-//         alert("定位失敗，將為您隨機推薦！");
-//         runLotteryEffect(state.foods.filter(f => f.category === 'veg'));
-//     }
-// }
 
 /**
  * 基礎視窗控制
