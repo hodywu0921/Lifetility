@@ -326,31 +326,6 @@ async function submitFoodForm() {
         lng: state.tempCoords ? state.tempCoords.lng : ""
     };
 
-    // try {
-    //     const GAS_DEPLOY_URL = CONFIG.GAS_URL;
-
-    //     const response = await fetch(GAS_DEPLOY_URL, {
-    //         method: "POST",
-    //         body: JSON.stringify(formData)
-    //     });
-
-    //     const result = await response.json();
-
-    //     if (result.result === "success") {
-    //         alert(`感謝！「${name}」已成功加入美食庫！`);
-    //         closeAddFoodModal();
-    //         fetchFoodFromGAS();
-    //     } else {
-    //         throw new Error(result.message);
-    //     }
-
-    // } catch (error) {
-    //     console.error("提交失敗:", error);
-    //     alert("提交時發生錯誤，請稍後再試。");
-    // } finally {
-    //     btn.innerText = originalText;
-    //     btn.disabled = false;
-    // }
     try {
         const GAS_DEPLOY_URL = CONFIG.GAS_URL;
 
@@ -487,6 +462,7 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
+
 
 
 
