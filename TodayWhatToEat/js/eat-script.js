@@ -130,7 +130,7 @@ async function drawFood(category) {
             });
 
             if (filteredFoods.length === 0) {
-                console.log("5KM 內無符合美食，準備回退至全區 veg 抽籤");
+                console.log("範圍內無符合美食，準備回退至全區 veg 抽籤");
             }
         } catch (error) {
             console.warn("定位獲取失敗:", error.message);
@@ -412,4 +412,5 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
+
 
