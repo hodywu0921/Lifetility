@@ -1,9 +1,9 @@
 /**
- * 系統配置與常數管理
+ * 1. 系統配置與常數管理
  */
 const CONFIG = {
     GAS_URL: "https://script.google.com/macros/s/AKfycbyFnXnrq5HLea8OhJoaz-vQX4HgF4Da1BB69HeDN1kICJ2kFQSXLC71vOMsJuqURHb4wg/exec",
-    ANIMATION_DURATION: 600, // 與 CSS shake 動畫時間一致
+    ANIMATION_DURATION: 600,
     SELECTORS: {
         overlay: 'result-overlay',
         resName: 'res-name',
@@ -15,124 +15,180 @@ const CONFIG = {
         verifyOverlay: 'verify-overlay',
         captchaCode: 'captcha-code',
         verifyInput: 'verify-input',
-        addFoodOverlay: 'add-food-overlay'
+        addFoodOverlay: 'add-food-overlay',
+        loadingOverlay: 'loading-overlay'
     },
-    ERROR_PLACEHOLDER: {
-        name: "載入失敗",
-        emoji: "⚠️",
-        price: "0",
-        desc: "請確認網路或 GAS 部署",
-        tag: "ERROR"
-    }
+    CATEGORY_MAP: { "poor": "能吃啥", "rich": "想吃啥", "veg": "我就廢" },
+    EMOJI_MAP: { "veg": "🛌", "rich": "💎", "poor": "💸" }
 };
 
 /**
- * 全域狀態管理
+ * 2. 全域狀態管理
  */
 let state = {
     foodDatabase: [],
     currentMapUrl: "",
-    currentAnswer: 0
+    currentAnswer: 0,
+    tempCoords: { lat: null, lng: null }
 };
 
 /**
- * 初始化：載入資料
+ * 3. 初始化入口
  */
 window.onload = async () => {
-    await fetchFoodFromGAS();
+    await API.fetchFoodFromGAS();
 };
 
 /**
- * 在 state 物件中新增臨時座標存儲
+ * 4. API 模組：處理與 Google Apps Script 的串接
  */
-state.tempCoords = { lat: null, lng: null };
-
-/**
- * [GAS 串接部分] 保持原有的運行邏輯
- */
-
-/**
- * 新增：隱藏遮罩函式
- */
-function hideLoading() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-        overlay.classList.add('fade-out');
-        setTimeout(() => {
-            overlay.style.display = 'none';
-        }, 500);
-    }
-}
-
-async function fetchFoodFromGAS() {
-    try {
-        const response = await fetch(CONFIG.GAS_URL);
-        const data = await response.json();
-        
-        state.foodDatabase = data;
-        console.log(`GAS 美食庫同步成功！共有 ${state.foodDatabase.length} 筆`);
-
-        hideLoading();
-
-    } catch (error) {
-        console.error("載入失敗", error);
-        const statusText = document.querySelector('#loading-overlay p');
-        if (statusText) statusText.innerText = "連線不穩定，請重新整理頁面 😢";
-    }
-}
-
-/**
- * 使用哈弗辛公式計算兩點間的直線距離 (單位: 公里)
- */
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // 地球半徑 (km)
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; 
-}
-
-/**
- * 獲取使用者當前 GPS 位置
- */
-async function getUserLocation() {
-    return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-            reject(new Error('您的瀏覽器不支援定位功能'));
+const API = {
+    async fetchFoodFromGAS() {
+        try {
+            const response = await fetch(CONFIG.GAS_URL);
+            const data = await response.json();
+            state.foodDatabase = data;
+            console.log(`GAS 美食庫同步成功！共有 ${state.foodDatabase.length} 筆`);
+            UI.hideLoading();
+        } catch (error) {
+            console.error("載入失敗", error);
+            const statusText = document.querySelector('#loading-overlay p');
+            if (statusText) statusText.innerText = "連線不穩定，請重新整理頁面 😢";
         }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            (err) => reject(err),
-            { enableHighAccuracy: true, timeout: 5000 }
-        );
-    });
-}
+    },
+
+    async postFood(formData) {
+        const response = await fetch(CONFIG.GAS_URL, {
+            method: "POST",
+            body: JSON.stringify(formData)
+        });
+        return await response.json();
+    }
+};
 
 /**
- * 核心抽籤函式：整合類別篩選與地理位置判斷
+ * 5. Location 模組：處理地理位置計算與獲取
  */
-async function drawFood(category) {
-    const targetBox = event ? event.currentTarget : null; 
+const Location = {
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    },
 
+    getUserLocation() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) return reject(new Error('您的瀏覽器不支援定位功能'));
+            
+            const geoOptions = { 
+                enableHighAccuracy: true, 
+                timeout: 15000, maximumAge: 0 
+            };
+            
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    console.log(`定位成功，精度誤差：${pos.coords.accuracy} 公尺`);
+                    resolve({ 
+                        lat: pos.coords.latitude, 
+                        lng: pos.coords.longitude 
+                    });
+                },
+                (err) => {
+                    let errorMsg = "定位失敗";
+                    if (err.code === 1) errorMsg = "請開啟位置權限以獲取精確位置";
+                    else if (err.code === 2) errorMsg = "無法獲取目前位置（請檢查 GPS 訊號）";
+                    else if (err.code === 3) errorMsg = "定位逾時，請至收訊較佳處再試一次";
+                    reject(new Error(errorMsg));
+                },
+                geoOptions
+            );
+        });
+    }
+};
+
+/**
+ * 6. UI 模組：處理所有視覺渲染與遮罩控制
+ */
+const UI = {
+    hideLoading() {
+        const overlay = document.getElementById(CONFIG.SELECTORS.loadingOverlay);
+        if (overlay) {
+            overlay.classList.add('fade-out');
+            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        }
+    },
+
+    triggerShakeAnimation(element) {
+        if (!element) return;
+        element.classList.remove('shake');
+        void element.offsetWidth;
+        element.classList.add('shake');
+        setTimeout(() => element.classList.remove('shake'), CONFIG.ANIMATION_DURATION);
+    },
+
+    updateResultUI(res) {
+        const { SELECTORS } = CONFIG;
+        document.getElementById(SELECTORS.resName).innerText = res.name;
+        document.getElementById(SELECTORS.resPrice).innerText = `價格：${res.price}`;
+        document.getElementById(SELECTORS.resDesc).innerText = res.desc || "暫無詳細描述";
+        
+        if (document.getElementById(SELECTORS.resAddress)) {
+            document.getElementById(SELECTORS.resAddress).innerText = res.address ? `📍 ${res.address}` : "📍 暫無地址資訊";
+        }
+
+        const tagContainer = document.getElementById(SELECTORS.resTag);
+        if (tagContainer) {
+            tagContainer.innerHTML = '';
+            if (res.tag) {
+                res.tag.split(' ').filter(t => t.trim() !== '').forEach(tagText => {
+                    const span = document.createElement('span');
+                    span.className = 'tag-sticker';
+                    span.innerText = tagText;
+                    tagContainer.appendChild(span);
+                });
+            } else { tagContainer.innerText = "暫無標記資訊"; }
+        }
+
+        if (res.emoji && document.getElementById(SELECTORS.resEmoji)) {
+            document.getElementById(SELECTORS.resEmoji).innerText = res.emoji;
+        }
+
+        state.currentMapUrl = this.resolveMapUrl(res);
+        document.getElementById(SELECTORS.overlay).style.display = 'flex';
+    },
+
+    resolveMapUrl(res) {
+        let foundUrl = "";
+        for (let key in res) {
+            if (typeof res[key] === 'string' && res[key].startsWith('http')) {
+                foundUrl = res[key];
+                break;
+            }
+        }
+        return foundUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(res.name)}`;
+    }
+};
+
+/**
+ * 7. Actions：核心業務邏輯
+ */
+
+async function drawFood(category) {
+    const targetBox = event ? event.currentTarget : null;
     if (!state.foodDatabase || !state.foodDatabase.length) {
         console.warn("資料庫尚無資料，請稍候...");
         return;
     }
 
     let filteredFoods = [];
-    const isLazyBox = (category === 'veg');
+    UI.triggerShakeAnimation(targetBox);
 
-    if (targetBox && typeof triggerShakeAnimation === 'function') {
-        triggerShakeAnimation(targetBox);
-    }
-
-    if (isLazyBox) {
+    if (category === 'veg') {
         try {
             console.log("偵測到『我就廢』模式，正在嘗試獲取位置...");
-            const userLoc = await getUserLocation(); 
+            const userLoc = await Location.getUserLocation();
             console.log(`成功取得裝置位置！`);
             console.log(`緯度 (Lat): ${userLoc.lat}`);
             console.log(`經度 (Lng): ${userLoc.lng}`);
@@ -140,160 +196,47 @@ async function drawFood(category) {
             filteredFoods = state.foodDatabase.filter(item => {
                 const itemCat = String(item.category || item.Category || "").trim();
                 if (itemCat === 'veg' && item.lat && item.lng) {
-                    const dist = calculateDistance(
-                        userLoc.lat, userLoc.lng, 
-                        parseFloat(item.lat), parseFloat(item.lng)
-                    );
-                    return dist <= 2; 
+                    const dist = Location.calculateDistance(userLoc.lat, userLoc.lng, parseFloat(item.lat), parseFloat(item.lng));
+                    return dist <= 2;
                 }
                 return false;
             });
-
-            if (filteredFoods.length === 0) {
-                console.log("範圍內無符合美食，準備回退至全區 veg 抽籤");
-            }
-        } catch (error) {
-            console.warn("定位獲取失敗:", error.message);
-        }
-    }
-
-    // 4. 通用篩選邏輯
-    if (filteredFoods.length === 0) {
-        filteredFoods = state.foodDatabase.filter(item => {
-            const itemCat = String(item.category || item.Category || "").trim();
-            return itemCat === category;
-        });
+            if (filteredFoods.length === 0) console.log("範圍內無符合美食，準備回退至我就廢全域池抽籤");
+        } catch (error) { console.warn("定位獲取失敗:", error.message); }
     }
 
     if (filteredFoods.length === 0) {
-        alert(`目前「${category}」清單裡還沒有美食喔！`);
-        return;
+        filteredFoods = state.foodDatabase.filter(item => String(item.category || item.Category || "").trim() === category);
     }
 
-    // 5. 執行抽籤延遲並顯示結果
+    if (filteredFoods.length === 0) return alert(`目前「${category}」清單裡還沒有美食喔！`);
+
     setTimeout(() => {
         const randomResult = filteredFoods[Math.floor(Math.random() * filteredFoods.length)];
-        updateResultUI(randomResult);
-    }, CONFIG.ANIMATION_DURATION || 500);
+        UI.updateResultUI(randomResult);
+    }, CONFIG.ANIMATION_DURATION);
 }
 
-/**
- * [UI 輔助] 觸發箱子抖動動畫
- */
-function triggerShakeAnimation(element) {
-    if (!element) return;
-    element.classList.remove('shake');
-    void element.offsetWidth;
-    element.classList.add('shake');
-    
-    setTimeout(() => element.classList.remove('shake'), CONFIG.ANIMATION_DURATION);
-}
-
-/**
- * [UI 輔助] 更新結果卡片畫面
- */
-function updateResultUI(res) {
-    const { SELECTORS } = CONFIG;
-    
-    document.getElementById(SELECTORS.resName).innerText = res.name;
-    document.getElementById(SELECTORS.resPrice).innerText = `價格：${res.price}`;
-    document.getElementById(SELECTORS.resDesc).innerText = res.desc || "暫無詳細描述";
-    
-    if (document.getElementById(SELECTORS.resAddress)) {
-        document.getElementById(SELECTORS.resAddress).innerText = res.address ? `📍 ${res.address}` : "📍 暫無地址資訊";
-    }
-
-    const tagContainer = document.getElementById(SELECTORS.resTag);
-    if (tagContainer) {
-        tagContainer.innerHTML = '';
-        
-        if (res.tag) {
-            const tags = res.tag.split(' ').filter(t => t.trim() !== '');
-            
-            tags.forEach(tagText => {
-                const span = document.createElement('span');
-                span.className = 'tag-sticker';
-                span.innerText = tagText;
-                tagContainer.appendChild(span);
-            });
-        } else {
-            tagContainer.innerText = "暫無標記資訊";
-        }
-    }
-
-    if (res.emoji && document.getElementById(SELECTORS.resEmoji)) {
-        document.getElementById(SELECTORS.resEmoji).innerText = res.emoji;
-    }
-
-    state.currentMapUrl = resolveMapUrl(res);
-    document.getElementById(SELECTORS.overlay).style.display = 'flex';
-}
-
-/**
- * [邏輯輔助] 解析地圖連結
- */
-function resolveMapUrl(res) {
-    let foundUrl = "";
-    for (let key in res) {
-        if (typeof res[key] === 'string' && res[key].startsWith('http')) {
-            foundUrl = res[key];
-            break;
-        }
-    }
-    return foundUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(res.name)}`;
-}
-
-// ==========================================
-// 新增美食與驗證邏輯
-// ==========================================
-
-/**
- * 開啟算術驗證彈窗
- */
 function openVerifyModal() {
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    const operators = ['+', '-', '×'];
-    const op = operators[Math.floor(Math.random() * operators.length)];
-
-    if (op === '+') state.currentAnswer = num1 + num2;
-    else if (op === '-') state.currentAnswer = num1 - num2;
-    else state.currentAnswer = num1 * num2;
-
+    const num1 = Math.floor(Math.random() * 10) + 1, num2 = Math.floor(Math.random() * 10) + 1;
+    const operators = ['+', '-', '×'], op = operators[Math.floor(Math.random() * 3)];
+    state.currentAnswer = (op === '+') ? num1 + num2 : (op === '-') ? num1 - num2 : num1 * num2;
     document.getElementById(CONFIG.SELECTORS.captchaCode).innerText = `${num1} ${op} ${num2} = ?`;
     document.getElementById(CONFIG.SELECTORS.verifyInput).value = "";
     document.getElementById(CONFIG.SELECTORS.verifyOverlay).style.display = 'flex';
 }
 
-/**
- * 檢查驗證碼，成功則關閉舊卡片，開啟表單卡片
- */
 function checkVerify() {
     const userInput = parseInt(document.getElementById(CONFIG.SELECTORS.verifyInput).value);
-    
     if (!isNaN(userInput) && userInput === state.currentAnswer) {
         closeVerifyModal();
-        
-        setTimeout(() => {
-            document.getElementById(CONFIG.SELECTORS.addFoodOverlay).style.display = 'flex';
-        }, 300);
+        setTimeout(() => { document.getElementById(CONFIG.SELECTORS.addFoodOverlay).style.display = 'flex'; }, 300);
     } else {
         alert("答案錯誤，請重新計算！");
         openVerifyModal();
     }
 }
 
-/**
- * 關閉表單彈窗並重設表單
- */
-function closeAddFoodModal() {
-    document.getElementById(CONFIG.SELECTORS.addFoodOverlay).style.display = 'none';
-    document.getElementById('food-form').reset();
-}
-
-/**
- * 處理美食表單送出並寫入 Google Sheets
- */
 async function submitFoodForm() {
     const name = document.getElementById('new-food-name').value.trim();
     const price = document.getElementById('new-food-price').value.trim();
@@ -301,171 +244,95 @@ async function submitFoodForm() {
     const address = document.getElementById('new-food-address').value.trim();
     const desc = document.getElementById('new-food-desc').value.trim();
 
-    // 建立推薦類型與 Emoji 的對照表
-    const emojiMap = {
-        "veg": "🛌",
-        "rich": "💎",
-        "poor": "💸"
-    };
+    if (!name || !price || !category) return alert("請完整填寫：美食名稱、價格、以及推薦類型喔！");
 
-    // 根據選擇的類型取得對應的 emoji，若無匹配則給預設值
-    const selectedEmoji = emojiMap[category] || "🍴";
-
-
-    // 1. 必填欄位檢查
-    if (!name || !price || !category) {
-        alert("請完整填寫：美食名稱、價格、以及推薦類型喔！");
-        return;
-    }
-
-    // 2. 顯示讀取狀態 (選配)
     const btn = event.currentTarget;
     const originalText = btn.innerText;
-    btn.innerText = "傳送中...";
+    btn.innerText = "傳送中..."; 
     btn.disabled = true;
 
-    // 3. 封裝資料
     const formData = {
-        name: name,
-        emoji: selectedEmoji,
-        price: price,
-        desc: desc,
-        tag: "#網友推薦",
-        address: address,
-        map: "",
-        category: category,
-        lat: state.tempCoords ? state.tempCoords.lat : "",
-        lng: state.tempCoords ? state.tempCoords.lng : ""
+        name, 
+        emoji: CONFIG.EMOJI_MAP[category] || "🍴", 
+        price, 
+        desc,
+        tag: "#網友推薦", 
+        address, 
+        map: "", 
+        category,
+        lat: state.tempCoords.lat || "", 
+        lng: state.tempCoords.lng || ""
     };
 
     try {
-        const GAS_DEPLOY_URL = CONFIG.GAS_URL;
-
-        const response = await fetch(GAS_DEPLOY_URL, {
-            method: "POST",
-            body: JSON.stringify(formData)
-        });
-
-        const result = await response.json();
-
+        const result = await API.postFood(formData);
         if (result.result === "success") {
             alert(`感謝！「${name}」已成功加入美食庫！`);
-            closeAddFoodModal();
-            fetchFoodFromGAS();
-        } else {
-            throw new Error(result.message);
+            closeAddFoodModal(); 
+            API.fetchFoodFromGAS();
+        } else { 
+            throw new Error(result.message); 
         }
-        
-        // 4. 重置與清理
-        state.tempCoords = { lat: null, lng: null };
-        if (document.getElementById('geo-status-container')) {
-            document.getElementById('geo-status-container').style.display = "none";
-        }
-        document.getElementById('quick-geo-btn').innerText = "📍 自動定位";
-
-        closeAddFoodModal();
-        fetchFoodFromGAS();
-
     } catch (error) {
         console.error("提交失敗:", error);
         alert("提交時發生錯誤，請稍後再試。");
     } finally {
-        btn.innerText = originalText;
+        btn.innerText = originalText; 
         btn.disabled = false;
     }
 }
 
 /**
- * 切換下拉選單顯示/隱藏
+ * 8. 事件監聽與基礎控制
  */
-function toggleDropdown() {
-    const select = document.getElementById('custom-select');
-    const options = document.getElementById('select-options');
-    select.classList.toggle('open');
-    options.classList.toggle('active');
-}
 
-/**
- * 選擇選項邏輯
- */
-function selectOption(value, emoji) {
-
-    // 建立一個轉換表，將英文代碼轉回中文顯示標籤
-    const labelMap = {
-        "poor": "能吃啥",
-        "rich": "想吃啥",
-        "veg": "我就廢"
-    };
-
-    const chineseLabel = labelMap[value] || value;
-
-    document.getElementById('select-text').innerText = `${chineseLabel} (${emoji})`;
-    
-    document.getElementById('new-food-category').value = value;
-    
-    toggleDropdown();
-    
-    document.getElementById('custom-select').style.borderColor = 'var(--primary)';
-    setTimeout(() => {
-        document.getElementById('custom-select').style.borderColor = 'var(--brown)';
-    }, 200);
-}
-
-/**
- * 點擊頁面其他地方時收起選單
- */
-window.addEventListener('click', function(e) {
-    const select = document.getElementById('custom-select');
-    if (!select.contains(e.target)) {
-        select.classList.remove('open');
-        document.getElementById('select-options').classList.remove('active');
-    }
-});
-
-
-
-// 定位按鈕點擊事件
 document.getElementById('quick-geo-btn').addEventListener('click', async () => {
     const btn = document.getElementById('quick-geo-btn');
     const statusContainer = document.getElementById('geo-status-container');
-    
     try {
         btn.innerText = "⏳ 定位中...";
-        const loc = await getUserLocation(); 
-        
-        // 1. 將座標存入 state，不要改動地址 input 的 value
-        state.tempCoords.lat = loc.lat;
-        state.tempCoords.lng = loc.lng;
-        
-        // 2. 顯示成功狀態
+        const loc = await Location.getUserLocation();
+        state.tempCoords = { lat: loc.lat, lng: loc.lng };
         btn.innerText = "📍 重新定位";
         statusContainer.style.display = "";
         console.log("已暫存座標:", state.tempCoords);
-        
     } catch (error) {
         btn.innerText = "📍 自動定位";
         alert("定位失敗：" + error.message);
     }
 });
 
-// 清除定位按鈕
 document.getElementById('clear-geo').addEventListener('click', () => {
     state.tempCoords = { lat: null, lng: null };
     document.getElementById('geo-status-container').style.display = "none";
     document.getElementById('quick-geo-btn').innerText = "📍 自動定位";
 });
 
-/**
- * 基礎視窗控制
- */
-function closeResult() {
-    document.getElementById(CONFIG.SELECTORS.overlay).style.display = 'none';
+function toggleDropdown() {
+    document.getElementById('custom-select').classList.toggle('open');
+    document.getElementById('select-options').classList.toggle('active');
 }
 
-function closeVerifyModal() {
-    document.getElementById(CONFIG.SELECTORS.verifyOverlay).style.display = 'none';
+function selectOption(value, emoji) {
+    const label = CONFIG.CATEGORY_MAP[value] || value;
+    document.getElementById('select-text').innerText = `${label} (${emoji})`;
+    document.getElementById('new-food-category').value = value;
+    toggleDropdown();
+    document.getElementById('custom-select').style.borderColor = 'var(--primary)';
+    setTimeout(() => { document.getElementById('custom-select').style.borderColor = 'var(--brown)'; }, 200);
 }
 
-function openMap() {
-    if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
+window.addEventListener('click', (e) => {
+    if (!document.getElementById('custom-select').contains(e.target)) {
+        document.getElementById('custom-select').classList.remove('open');
+        document.getElementById('select-options').classList.remove('active');
+    }
+});
+
+function closeResult() { document.getElementById(CONFIG.SELECTORS.overlay).style.display = 'none'; }
+function closeVerifyModal() { document.getElementById(CONFIG.SELECTORS.verifyOverlay).style.display = 'none'; }
+function closeAddFoodModal() { 
+    document.getElementById(CONFIG.SELECTORS.addFoodOverlay).style.display = 'none'; 
+    document.getElementById('food-form').reset();
 }
+function openMap() { if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank'); }
