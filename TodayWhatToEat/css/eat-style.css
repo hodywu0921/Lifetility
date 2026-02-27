@@ -1,4 +1,6 @@
-/* 基礎設定與變數 */
+/* ==========================================
+   1. 基礎設定與全域變數
+   ========================================== */
 :root {
     --bg-color: #fffcf2;
     --primary-color: #eb5e28;
@@ -28,6 +30,9 @@ body {
     overflow-x: hidden;
 }
 
+/* ==========================================
+   2. 固定導覽元件 (Back & Add Food)
+   ========================================== */
 .back-link, .add-food-link {
     position: fixed;
     top: 20px;
@@ -46,24 +51,17 @@ body {
     cursor: pointer;
 }
 
-/* 點擊共用效果 */
 .back-link:active, .add-food-link:active {
     transform: translate(2px, 2px);
     box-shadow: var(--active-shadow);
 }
 
-/* 個別定位與配色 */
-.back-link {
-    left: 20px;
-    background: var(--white);
-}
+.back-link { left: 20px; background: var(--white); }
+.add-food-link { right: 20px; background: var(--accent-yellow); }
 
-.add-food-link {
-    right: 20px;
-    background: var(--accent-yellow);
-}
-
-/* 主容器佈局 */
+/* ==========================================
+   3. 主頁面佈局與標題
+   ========================================== */
 .eat-container {
     max-width: 800px;
     margin: 0 auto;
@@ -79,16 +77,12 @@ body {
     margin-bottom: 50px;
 }
 
-.header h1 {
-    font-size: 2.2rem;
-    margin: 0;
-}
+.header h1 { font-size: 2.2rem; margin: 0; }
+.header p { color: #666; margin-top: 10px; }
 
-.header p {
-    color: #666;
-    margin-top: 10px;
-}
-
+/* ==========================================
+   4. 抽籤箱區域 (Food Boxes)
+   ========================================== */
 .food-boxes-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -96,10 +90,8 @@ body {
     width: 100%;
 }
 
-/* 抽籤箱單體 */
 .food-box {
     aspect-ratio: 1 / 1;
-    background: var(--accent-yellow);
     border: 5px solid var(--dark-brown);
     border-radius: 25px;
     display: flex;
@@ -109,6 +101,9 @@ body {
     cursor: pointer;
     box-shadow: var(--card-shadow);
     transition: transform 0.1s, box-shadow 0.1s;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .food-box:active {
@@ -116,42 +111,10 @@ body {
     box-shadow: var(--btn-shadow);
 }
 
-/* 箱子類型顏色 */
-.food-box.is-poor { 
-    background-image: url('../image/poor.png'); 
-    
-    background-size: cover; 
-    
-    background-position: center;
-    
-    background-repeat: no-repeat;
-    
-    background-color: transparent;
-}
-.food-box.is-rich { 
-    background-image: url('../image/rich.png'); 
-    
-    background-size: cover; 
-    
-    background-position: center;
-    
-    background-repeat: no-repeat;
-    
-    background-color: transparent;
-}
-.food-box.is-lazy { 
-    background-image: url('../image/veg.png'); 
-    
-    background-size: cover; 
-    
-    background-position: center;
-    
-    background-repeat: no-repeat;
-    
-    background-color: transparent;
-
-
-}
+/* 抽籤箱背景圖片設定 */
+.food-box.is-poor { background-image: url('../image/poor.png'); background-color: transparent; }
+.food-box.is-rich { background-image: url('../image/rich.png'); background-color: transparent; }
+.food-box.is-lazy { background-image: url('../image/veg.png'); background-color: transparent; }
 
 .box-emoji { font-size: 3rem; margin-bottom: 10px; }
 .box-label { 
@@ -164,18 +127,10 @@ body {
     margin-bottom: 10px;
 }
 
-.shake {
-    animation: shakeAnim 0.5s ease-in-out;
-}
-
-@keyframes shakeAnim {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-5deg); }
-    75% { transform: rotate(5deg); }
-}
-
+/* ==========================================
+   5. 結果顯示彈窗 (Result Overlay)
+   ========================================== */
 .result-overlay {
-    position: fixed;
     display: none;
     position: fixed;
     top: 0;
@@ -186,7 +141,6 @@ body {
     z-index: 1000;
     justify-content: center;
     align-items: center;
-    overflow-y: auto;
     padding: 20px;
 }
 
@@ -194,44 +148,36 @@ body {
     position: relative;
     width: 90%;
     max-width: 450px;
+    max-height: 85vh;
     background: white;
     padding: 30px;
     border: 4px solid var(--dark-brown);
     border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     box-shadow: var(--card-shadow);
-    max-height: 85vh;
     overflow-y: auto;
-    overflow-x: hidden;
     scrollbar-gutter: stable;
-    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.result-card::-webkit-scrollbar {
+/* 滾動條樣式 */
+.result-card::-webkit-scrollbar, .add-food-card::-webkit-scrollbar {
     width: 8px;
 }
-
 .result-card::-webkit-scrollbar-track {
     background: transparent;
     margin: 15px 0;
 }
-
-.result-card::-webkit-scrollbar-thumb {
+.result-card::-webkit-scrollbar-thumb, .add-food-card::-webkit-scrollbar-thumb {
     background: #d4d4d4;
     border-radius: 10px;
 }
-
 
 .result-emoji { font-size: 4rem; margin-bottom: 15px; }
 
 #res-price {
     width: 100%;
-    display: block;
     background: #fff3f0;
     padding: 12px;
     border-radius: 12px;
@@ -241,12 +187,10 @@ body {
     font-size: 1.1rem;
     margin: 15px 0;
     text-align: center;
-    box-sizing: border-box;
 }
 
 #res-address {
     width: 100%;
-    font-family: inherit;
     font-weight: bold;
     color: var(--dark-brown);
     background: var(--white);
@@ -256,16 +200,12 @@ body {
     margin: 10px 0;
     display: flex;
     justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
     box-shadow: var(--btn-shadow); 
-    text-align: center;
 }
 
- #res-desc {
+#res-desc {
     width: 100%;
     text-align: left;
-    line-height: 1.7;
     margin: 15px 0;
     padding: 0 10px;
     color: #555;
@@ -273,11 +213,9 @@ body {
     white-space: pre-wrap;
 }
 
-.tag {
-    margin-top: 10px;
-    margin-bottom: 30px !important;
-    padding: 0 10px;
-}
+/* 標籤樣式 */
+.tag { margin: 10px 0 30px; padding: 0 10px; width: 100%; }
+#res-tag { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; }
 
 .tag-sticker {
     background-color: #fcefb4;
@@ -292,20 +230,11 @@ body {
     transform: rotate(-1.5deg);
     transition: transform 0.2s;
 }
+.tag-sticker:nth-child(even) { transform: rotate(2deg); }
 
-.tag-sticker:nth-child(even) {
-    transform: rotate(2deg);
-}
-
-#res-tag {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    width: 100%;
-    justify-content: flex-start;
-    margin-top: 10px;
-}
-
+/* ==========================================
+   6. 按鈕與通用元件
+   ========================================== */
 .go-btn {
     width: 100%;
     padding: 15px;
@@ -332,26 +261,13 @@ body {
     background: white;
 }
 
-@keyframes popUp {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-@media (max-width: 768px) {
-    .food-boxes-container {
-        grid-template-columns: 1fr;
-        max-width: 200px;
-    }
-    
-    .header h1 { font-size: 1.6rem; }
-    
-    .back-link, .add-food-link {
-        padding: 8px 14px;
-        font-size: 14px;
-        top: 15px;
-    }
-    .back-link { left: 15px; }
-    .add-food-link { right: 15px; }
+/* ==========================================
+   7. 新增食物卡片與表單 (Add Food Form)
+   ========================================== */
+.add-food-overlay {
+    display: none; 
+    align-items: center; 
+    justify-content: center;
 }
 
 .add-food-card {
@@ -364,56 +280,16 @@ body {
     padding: 25px 30px;
     position: relative;
     text-align: center;
-    box-sizing: border-box;
     margin: 20px auto;
     box-shadow: var(--card-shadow);
+    overflow-y: auto;
 }
 
-.add-food-card h2 {
-    margin-top: 10px;
-    font-size: 1.5rem;
-}
+.food-form { text-align: left; margin-top: 20px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
 
-.add-food-card p {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 25px;
-}
-
-.add-food-card::-webkit-scrollbar {
-    width: 8px;
-}
-.add-food-card::-webkit-scrollbar-thumb {
-    background: #403d39;
-    border-radius: 10px;
-}
-
-.add-food-overlay {
-    display: none; 
-    align-items: center; 
-    justify-content: center;
-}
-
-
-.food-form {
-    text-align: left;
-    margin-top: 20px;
-}
-
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: var(--dark-brown);
-}
-
-.form-group input, 
-.form-group select, 
-.form-group textarea {
+.form-group input, .form-group select, .form-group textarea {
     width: 100%;
     padding: 12px;
     border: 3px solid var(--dark-brown);
@@ -423,44 +299,25 @@ body {
     outline: none;
 }
 
-.form-row {
-    display: flex;
-    gap: 12px;
-}
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
 
-.form-row .form-group {
-    flex: 1;
-}
-
-.custom-select {
-    position: relative;
-    width: 100%;
-    user-select: none;
-}
-
+/* 自定義下拉選單 (Custom Select) */
+.custom-select { position: relative; width: 100%; user-select: none; }
 .select-trigger {
     padding: 12px 15px;
     background: white;
-    border: 3px solid #403d39;
+    border: 3px solid var(--dark-brown);
     border-radius: 12px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: bold;
-    position: relative;
     z-index: 102;
     transition: all 0.1s;
 }
-
-.custom-select.open .select-trigger {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.select-trigger:active {
-    transform: translate(2px, 2px);
-}
+.custom-select.open .select-trigger { border-radius: 12px 12px 0 0; }
 
 .select-options {
     position: absolute;
@@ -468,70 +325,30 @@ body {
     left: 0;
     right: 0;
     background: white;
-    border: 3px solid #403d39;
+    border: 3px solid var(--dark-brown);
     border-radius: 0 0 12px 12px; 
-    box-shadow: 6px 6px 0px #403d39; 
+    box-shadow: 6px 6px 0px var(--dark-brown); 
     z-index: 101;
     display: none;
-    overflow: hidden; 
-    margin: 0;
-    padding: 0;
 }
-
-.select-options.active {
-    display: block;
-    animation: popUp 0.2s ease-out; 
-}
+.select-options.active { display: block; animation: popUp 0.2s ease-out; }
 
 .option {
     padding: 12px 15px;
     cursor: pointer;
     font-weight: bold;
-    color: #403d39;
     border-bottom: 2px solid #f0f0f0; 
-    background: white;
 }
+.option:hover { background-color: var(--bg-color); color: var(--primary-color); }
+.arrow { font-size: 0.7rem; transition: transform 0.2s; }
+.custom-select.open .arrow { transform: rotate(180deg); }
 
-.option:last-child {
-    border-bottom: none;
-}
-
-.option:hover {
-    background-color: #fffcf2;
-    color: #eb5e28;
-}
-
-.arrow {
-    font-size: 0.7rem;
-    transition: transform 0.2s;
-}
-
-.custom-select.open .arrow {
-    transform: rotate(180deg);
-}
-
-@media (max-width: 600px) {
-    .add-food-card {
-        max-width: 95%;
-        padding: 20px;
-    }
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    .add-food-card {
-        padding: 20px;
-        max-height: 90vh;
-    }
-}
-
-/* --- 載入遮罩樣式 (整併版) --- */
+/* ==========================================
+   8. 載入遮罩 (Loading Overlay)
+   ========================================== */
 #loading-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-color: var(--bg-color);
     display: flex;
     justify-content: center;
@@ -540,31 +357,11 @@ body {
     transition: opacity 0.5s ease, visibility 0.5s;
 }
 
-.loader-content {
-    text-align: center;
-    width: 90%;
-}
-
 .loader-gif {
     width: 220px; 
-    height: auto;
-    margin-bottom: 25px;
+    margin: 0 auto 25px;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
     filter: drop-shadow(6px 6px 0px var(--dark-brown)); 
-}
-
-@media (max-width: 600px) {
-    .loader-gif {
-        width: 180px; 
-        margin-bottom: 20px;
-    }
-    
-    .loader-content p {
-        font-size: 1.1rem;
-        font-weight: bold;
-    }
 }
 
 .loader-bar {
@@ -586,15 +383,40 @@ body {
     animation: loadingSlide 1.5s infinite ease-in-out;
 }
 
-/* --- 動畫定義 --- */
+#loading-overlay.fade-out { opacity: 0; visibility: hidden; }
+
+/* ==========================================
+   9. 動畫與響應式設定
+   ========================================== */
+@keyframes shakeAnim {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+.shake { animation: shakeAnim 0.5s ease-in-out; }
+
+@keyframes popUp {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
 @keyframes loadingSlide {
     0% { left: -40%; }
     50% { left: 100%; }
     100% { left: -40%; }
 }
 
-/* 關閉遮罩的淡出效果 */
-#loading-overlay.fade-out {
-    opacity: 0;
-    visibility: hidden;
+/* 響應式佈局 */
+@media (max-width: 768px) {
+    .food-boxes-container { grid-template-columns: 1fr; max-width: 200px; }
+    .header h1 { font-size: 1.6rem; }
+    .back-link, .add-food-link { padding: 8px 14px; font-size: 14px; top: 15px; }
+    .back-link { left: 15px; }
+    .add-food-link { right: 15px; }
+}
+
+@media (max-width: 600px) {
+    .add-food-card { padding: 20px; max-height: 90vh; }
+    .form-row { flex-direction: column; gap: 0; }
+    .loader-gif { width: 180px; }
 }
