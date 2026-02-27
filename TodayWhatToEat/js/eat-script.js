@@ -50,14 +50,34 @@ state.tempCoords = { lat: null, lng: null };
 /**
  * [GAS 串接部分] 保持原有的運行邏輯
  */
+
+/**
+ * 新增：隱藏遮罩函式
+ */
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+}
+
 async function fetchFoodFromGAS() {
     try {
         const response = await fetch(CONFIG.GAS_URL);
-        state.foodDatabase = await response.json();
+        const data = await response.json();
+        
+        state.foodDatabase = data;
         console.log(`GAS 美食庫同步成功！共有 ${state.foodDatabase.length} 筆`);
+
+        hideLoading();
+
     } catch (error) {
-        console.error("同步失敗：", error);
-        state.foodDatabase = [CONFIG.ERROR_PLACEHOLDER];
+        console.error("載入失敗", error);
+        const statusText = document.querySelector('#loading-overlay p');
+        if (statusText) statusText.innerText = "連線不穩定，請重新整理頁面 😢";
     }
 }
 
@@ -95,10 +115,8 @@ async function getUserLocation() {
  * 核心抽籤函式：整合類別篩選與地理位置判斷
  */
 async function drawFood(category) {
-    // 1. 【關鍵修正】在進入 async 邏輯前，先擷取 event 與 targetBox
     const targetBox = event ? event.currentTarget : null; 
 
-    // 防呆檢查
     if (!state.foodDatabase || !state.foodDatabase.length) {
         console.warn("資料庫尚無資料，請稍候...");
         return;
@@ -107,12 +125,10 @@ async function drawFood(category) {
     let filteredFoods = [];
     const isLazyBox = (category === 'veg');
 
-    // 2. 執行晃動動畫 (搬到最前面，讓使用者點擊後立刻有反應)
     if (targetBox && typeof triggerShakeAnimation === 'function') {
         triggerShakeAnimation(targetBox);
     }
 
-    // 3. 距離過濾邏輯
     if (isLazyBox) {
         try {
             console.log("偵測到『我就廢』模式，正在嘗試獲取位置...");
@@ -123,7 +139,6 @@ async function drawFood(category) {
 
             filteredFoods = state.foodDatabase.filter(item => {
                 const itemCat = String(item.category || item.Category || "").trim();
-                // 確保試算表對應欄位名稱正確 (lat, lng)
                 if (itemCat === 'veg' && item.lat && item.lng) {
                     const dist = calculateDistance(
                         userLoc.lat, userLoc.lng, 
@@ -193,12 +208,11 @@ function updateResultUI(res) {
         tagContainer.innerHTML = '';
         
         if (res.tag) {
-            // 依空格拆分並過濾空字串
             const tags = res.tag.split(' ').filter(t => t.trim() !== '');
             
             tags.forEach(tagText => {
                 const span = document.createElement('span');
-                span.className = 'tag-sticker'; // 對應 CSS 中的貼紙樣式
+                span.className = 'tag-sticker';
                 span.innerText = tagText;
                 tagContainer.appendChild(span);
             });
@@ -258,10 +272,8 @@ function checkVerify() {
     const userInput = parseInt(document.getElementById(CONFIG.SELECTORS.verifyInput).value);
     
     if (!isNaN(userInput) && userInput === state.currentAnswer) {
-        // 1. 關閉驗證彈窗
         closeVerifyModal();
         
-        // 2. 延遲開啟表單彈窗，讓視覺轉場更自然
         setTimeout(() => {
             document.getElementById(CONFIG.SELECTORS.addFoodOverlay).style.display = 'flex';
         }, 300);
@@ -345,14 +357,14 @@ async function submitFoodForm() {
         }
         
         // 4. 重置與清理
-        state.tempCoords = { lat: null, lng: null }; // 清空暫存座標
+        state.tempCoords = { lat: null, lng: null };
         if (document.getElementById('geo-status-container')) {
-            document.getElementById('geo-status-container').style.display = "none"; // 隱藏定位狀態
+            document.getElementById('geo-status-container').style.display = "none";
         }
         document.getElementById('quick-geo-btn').innerText = "📍 自動定位";
 
         closeAddFoodModal();
-        fetchFoodFromGAS(); // 重新整理列表
+        fetchFoodFromGAS();
 
     } catch (error) {
         console.error("提交失敗:", error);
@@ -385,19 +397,14 @@ function selectOption(value, emoji) {
         "veg": "我就廢"
     };
 
-    // 1. 更新顯示文字：從 labelMap 取得中文名稱，不要直接顯示 value (英文)
     const chineseLabel = labelMap[value] || value;
 
-    // 2. 更新顯示文字
     document.getElementById('select-text').innerText = `${chineseLabel} (${emoji})`;
     
-    // 3. 更新隱藏的 input 數值供提交使用
     document.getElementById('new-food-category').value = value;
     
-    // 4. 關閉選單
     toggleDropdown();
     
-    // 5. 視覺回饋：稍微閃爍一下
     document.getElementById('custom-select').style.borderColor = 'var(--primary)';
     setTimeout(() => {
         document.getElementById('custom-select').style.borderColor = 'var(--brown)';
@@ -462,7 +469,3 @@ function closeVerifyModal() {
 function openMap() {
     if (state.currentMapUrl) window.open(state.currentMapUrl, '_blank');
 }
-
-
-
-
