@@ -28,7 +28,6 @@ body {
     overflow-x: hidden;
 }
 
-/* 返回按鈕 - 移除大量 !important，改用結構優先級 */
 .back-link, .add-food-link {
     position: fixed;
     top: 20px;
@@ -207,6 +206,10 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-gutter: stable;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .result-card::-webkit-scrollbar {
@@ -227,26 +230,36 @@ body {
 .result-emoji { font-size: 4rem; margin-bottom: 15px; }
 
 #res-price {
-    display: inline-block;
+    width: 100%;
+    display: block;
     background: #fff3f0;
-    padding: 5px 15px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 12px;
     border: 2px dashed var(--primary-color);
     color: var(--primary-color);
     font-weight: 800;
+    font-size: 1.1rem;
     margin: 15px 0;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 #res-address {
+    width: 100%;
     font-family: inherit;
-    font-weight: 500;
-    color: #403d39;
-    background: #fffcf2;
-    padding: 5px 10px;
-    border: 2px solid #403d39;
-    border-radius: 8px;
+    font-weight: bold;
+    color: var(--dark-brown);
+    background: var(--white);
+    padding: 12px 15px;
+    border: 3px solid var(--dark-brown);
+    border-radius: 12px;
     margin: 10px 0;
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    box-shadow: var(--btn-shadow); 
+    text-align: center;
 }
 
  #res-desc {
@@ -254,8 +267,8 @@ body {
     text-align: left;
     line-height: 1.7;
     margin: 15px 0;
-    padding: 0 12px;
-    color: #333;
+    padding: 0 10px;
+    color: #555;
     font-size: 0.95rem;
     white-space: pre-wrap;
 }
@@ -293,8 +306,6 @@ body {
     margin-top: 10px;
 }
 
-
-
 .go-btn {
     width: 100%;
     padding: 15px;
@@ -313,22 +324,11 @@ body {
     box-shadow: var(--active-shadow);
 }
 
-/* .close-btn {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 2rem;
-    cursor: pointer;
-    color: var(--dark-brown);
-    line-height: 0.5;
-    z-index: 10;
-} */
-
 .close-btn {
     position: absolute;
     top: 15px;
     right: 20px;
-    z-index: 110; /* 確保按鈕永遠在最上層 */
+    z-index: 110;
     background: white;
 }
 
@@ -337,7 +337,6 @@ body {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* 響應式優化 */
 @media (max-width: 768px) {
     .food-boxes-container {
         grid-template-columns: 1fr;
@@ -357,18 +356,28 @@ body {
 
 .add-food-card {
     width: 95%;
-    max-width: 550px;
+    max-width: 420px; 
     max-height: 85vh;
-    overflow-y: auto;
     background: white;
-    border: 5px solid #403d39;
+    border: 5px solid var(--dark-brown);
     border-radius: 25px;
-    padding: 30px;
+    padding: 25px 30px;
     position: relative;
     text-align: center;
     box-sizing: border-box;
-    
-    margin: 20px auto; 
+    margin: 20px auto;
+    box-shadow: var(--card-shadow);
+}
+
+.add-food-card h2 {
+    margin-top: 10px;
+    font-size: 1.5rem;
+}
+
+.add-food-card p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 25px;
 }
 
 .add-food-card::-webkit-scrollbar {
@@ -392,7 +401,7 @@ body {
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
 }
 
 .form-group label {
@@ -416,7 +425,7 @@ body {
 
 .form-row {
     display: flex;
-    gap: 15px;
+    gap: 12px;
 }
 
 .form-row .form-group {
@@ -514,4 +523,78 @@ body {
         padding: 20px;
         max-height: 90vh;
     }
+}
+
+/* --- 載入遮罩樣式 (整併版) --- */
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; 
+    transition: opacity 0.5s ease, visibility 0.5s;
+}
+
+.loader-content {
+    text-align: center;
+    width: 90%;
+}
+
+.loader-gif {
+    width: 220px; 
+    height: auto;
+    margin-bottom: 25px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    filter: drop-shadow(6px 6px 0px var(--dark-brown)); 
+}
+
+@media (max-width: 600px) {
+    .loader-gif {
+        width: 180px; 
+        margin-bottom: 20px;
+    }
+    
+    .loader-content p {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+}
+
+.loader-bar {
+    width: 200px;
+    height: 10px;
+    background: var(--accent-gray);
+    border: 3px solid var(--dark-brown);
+    border-radius: 20px;
+    margin: 15px auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.loader-progress {
+    width: 40%;
+    height: 100%;
+    background: var(--accent-yellow);
+    position: absolute;
+    animation: loadingSlide 1.5s infinite ease-in-out;
+}
+
+/* --- 動畫定義 --- */
+@keyframes loadingSlide {
+    0% { left: -40%; }
+    50% { left: 100%; }
+    100% { left: -40%; }
+}
+
+/* 關閉遮罩的淡出效果 */
+#loading-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
 }
